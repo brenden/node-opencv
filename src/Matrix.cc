@@ -535,14 +535,10 @@ Matrix::ConvertGrayscale(const v8::Arguments& args) {
 	HandleScope scope;
 
 	Matrix *self = ObjectWrap::Unwrap<Matrix>(args.This());
-	if(self->mat.channels() != 3)
-		return v8::ThrowException(String::New("Image is no 3-channel"));
-
 	cv::Mat gray;
 
 	cv::cvtColor(self->mat, gray, CV_BGR2GRAY);
 	gray.copyTo(self->mat);
-
 
 	return scope.Close(v8::Null());
 }
@@ -553,9 +549,6 @@ Matrix::ConvertHSVscale(const v8::Arguments& args) {
     HandleScope scope;
 
     Matrix *self = ObjectWrap::Unwrap<Matrix>(args.This());
-    if(self->mat.channels() != 3)
-        return v8::ThrowException(String::New("Image is no 3-channel"));
-
     cv::Mat hsv;
 
     cv::cvtColor(self->mat, hsv, CV_BGR2HSV);
