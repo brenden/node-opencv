@@ -12,6 +12,7 @@ OpenCV::Init(Handle<Object> target) {
   target->Set(String::NewSymbol("version"), String::New(out, n));
 
   NODE_SET_METHOD(target, "readImage", ReadImage);
+  NODE_SET_METHOD(target, "pyrUp", PyrUp);
 
 }  
 
@@ -75,5 +76,41 @@ OpenCV::ReadImage(const Arguments &args) {
       return v8::ThrowException(v8::Exception::Error(v8::String::New(err_msg)));
   }
 };    
-    
 
+    
+Handle<Value>
+OpenCV::PyrUp(const Arguments &args) {
+  HandleScope scope;
+
+  try{
+
+    Local<Object> im_h = Matrix::constructor->GetFunction()->NewInstance();
+    Matrix *img = ObjectWrap::Unwrap<Matrix>(im_h);
+
+    REQ_FUN_ARG(1, cb);
+
+    Matrix *src = ObjectWrap::Unwrap<Matrix>(args[0]->ToObject());
+    cv::Size srcSize = src->mat.size();
+    img->mat = *(new cv::Mat(srcSize.width*2, srcSize.height*2, CV_64FC1));
+    cv::pyrUp(src->mat, img->mat);
+
+    Local<Value> argv[2];
+
+    argv[0] = Local<Value>::New(Null());
+    argv[1] = im_h;
+
+    TryCatch try_catch;
+
+    cb->Call(Context::GetCurrent()->Global(), 2, argv);
+
+    if (try_catch.HasCaught()) {
+      FatalException(try_catch);
+    }
+
+    return Undefined();
+
+  } catch( cv::Exception& e ){
+      const char* err_msg = e.what();
+      return v8::ThrowException(v8::Exception::Error(v8::String::New(err_msg)));
+  }
+};
