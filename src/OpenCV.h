@@ -36,6 +36,8 @@ class OpenCV: public node::ObjectWrap{
     static void Init(Handle<Object> target);
 
     static Handle<Value> ReadImage(const v8::Arguments&);
+    static Handle<Value> PyrUp(const v8::Arguments&);
+    static Handle<Value> PyrDown(const v8::Arguments&);
 
 };
 
