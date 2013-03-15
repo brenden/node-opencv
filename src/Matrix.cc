@@ -237,7 +237,7 @@ Handle<Value>
 
 	for (int x=0; x<width; x++){
 		cv::Vec3b pixel = self->mat.at<cv::Vec3b>(y, x);
-		int offset = x * 3;
+    int offset = x * self->mat.channels();
 		arr->Set(offset    , Number::New((double)pixel.val[0]));
 		arr->Set(offset + 1, Number::New((double)pixel.val[1]));
 		arr->Set(offset + 2, Number::New((double)pixel.val[2]));
@@ -272,7 +272,7 @@ Matrix::PixelCol(const Arguments& args){
 
   for (int y=0; y<height; y++){
     cv::Vec3b pixel = self->mat.at<cv::Vec3b>(y, x);
-    int offset = y * 3;
+    int offset = x * self->mat.channels();
     arr->Set(offset    , Number::New((double)pixel.val[0]));
     arr->Set(offset + 1, Number::New((double)pixel.val[1]));
     arr->Set(offset + 2, Number::New((double)pixel.val[2]));
