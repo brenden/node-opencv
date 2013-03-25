@@ -179,7 +179,7 @@ vows.describe('Smoke Tests OpenCV').addBatch({
           , cb = this.callback
 
         cv.readImage("./examples/mona.png", function(err, im){
-          im.detectObject("./data/haarcascade_frontalface_alt.xml", {}, cb)
+          im.detectObject(cv.FACE_CASCADE, {}, cb)
         })  
       }
 
@@ -250,12 +250,12 @@ vows.describe('Smoke Tests OpenCV').addBatch({
   }
 
 
-  , "ImageStream" : {
+  , "ImageDataStream" : {
     topic : require('../lib/opencv')
 
     , "pipe" : {
       topic : function(cv){
-        var s = new cv.ImageStream()
+        var s = new cv.ImageDataStream()
           , self = this
         s.on('load', function(im){ 
           assert.ok(im)
@@ -271,6 +271,29 @@ vows.describe('Smoke Tests OpenCV').addBatch({
       }
     }
 
+
+  }
+  , "ImageStream" :{
+    topic : require('../lib/opencv')
+    , "write" : {
+      topic: function(cv){
+        var s = new cv.ImageStream()
+          , im = fs.readFileSync('./examples/mona.png')
+          , self = this;
+
+        s.on('data', function(m){
+          self.callback(null, m)
+        })
+        s.write(im);
+      }
+      , "receives data" : function(mat){
+        assert.deepEqual(mat.size(), [756,500])
+      }
+    }
+
+  }
+  , "ObjectDetectionStream" :{
+    topic : require('../lib/opencv')
 
   }
 

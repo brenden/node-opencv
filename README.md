@@ -29,7 +29,7 @@ Or to build the repo:
 
 
         cv.readImage("./examples/test.jpg", function(err, im){
-          im.detectObject("./data/haarcascade_frontalface_alt.xml", {}, function(err, faces){
+          im.detectObject(cv.FACE_CASCADE, {}, function(err, faces){
             for (var i=0;i<faces.length; i++){
               var x = faces[i]
               im.ellipse(x.x + x.width/2, x.y + x.height/2, x.width/2, x.height/2);
@@ -65,15 +65,30 @@ Or you can use opencv to read in image files. Supported formats are in the OpenC
           ...
         })
 
-If you need to pipe data into an image, you can use an imagestream:
+If you need to pipe data into an image, you can use an ImageDataStream:
+
+        var s = new cv.ImageDataStream()
+
+        s.on('load', function(matrix){
+          ...
+        })
+
+        fs.createReadStream('./examples/test.jpg').pipe(s);
+
+If however, you have a series of images, and you wish to stream them into a
+stream of Matrices, you can use an ImageStream. Thus:
 
         var s = new cv.ImageStream()
 
-        s.on('load', function(matrix){ 
-          ...
-        }) 
+        s.on('data', function(matrix){
+           ...
+        })
 
-        fs.createReadStream('./examples/test.jpg').pipe(s);        
+        ardrone.createPngStream().pipe(s);
+
+Note: Each 'data' event into the ImageStream should be a complete image buffer.
+
+
 
 #### Accessing Data
 
@@ -117,6 +132,7 @@ detection. This can be used for face detection etc.
 
         mat.detectObject(haar_cascade_xml, opts, function(err, matches){})
 
+For convenience in face recognition, cv.FACE_CASCADE is a cascade that can be used for frontal face recognition.
 
 Also:
 
@@ -129,6 +145,39 @@ Also:
         mat.drawContour
         mat.drawAllContours
 
+### Using Contours
+
+`findContours` returns a `Contours` collection object, not a native array. This object provides
+functions for accessing, computing with, and altering the contours contained in it.
+See [relevant source code](src/Contours.cc) and [examples](examples/)
+
+        var contours = im.findContours;
+
+        # Count of contours in the Contours object
+        contours.size();
+
+        # Count of corners(verticies) of contour `index`
+        contours.cornerCount(index);
+
+        # Access vertex data of contours
+        for(var c = 0; c < contours.size(); ++c) {
+          console.log("Contour " + c);
+          for(var i = 0; i < contours.cornerCount(c); ++i) {
+            var point = contours.point(c, i);
+            console.log("(" + point.x + "," + point.y + ")");"
+          }
+        }
+
+        # Computations of contour `index`
+        contours.area(index);
+        contours.arcLength(index, isClosed);
+        contours.boundingRect(index);
+        contours.minAreaRect(index);
+        contours.isConvex(index);
+
+        # Destructively alter contour `index`
+        contours.approxPolyDP(index, epsilon, isClosed);
+        contours.convexHull(index, clockwise);
 
 ## MIT License
 The library is distributed under the MIT License - if for some reason that 
@@ -136,6 +185,20 @@ doesn't work for you please get in touch.
 
 ## Changelog
 
+#### 0.0.12
+- Matrix clone()
+- NamedWindow Support
+
+#### 0.0.11
+
+- Bug Fixes
+- ImageStream becomes ImageDataStream, and new ImageStream allows multiple images to be
+streamed as matrices, for example, with an object detection stream.
+- @ryansouza improved documentation
+- Correcting matrix constructor (thanks @gluxon)
+- @Michael Smith expanded Contours functionality.
+
+Thanks all!
 
 #### 0.0.10
 

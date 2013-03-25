@@ -37,6 +37,7 @@ Matrix::Init(Handle<Object> target) {
 	NODE_SET_PROTOTYPE_METHOD(constructor, "width", Width);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "height", Height);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "size", Size);
+	NODE_SET_PROTOTYPE_METHOD(constructor, "clone", Clone);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "toBuffer", ToBuffer);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "toBufferAsync", ToBufferAsync);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "ellipse", Ellipse);
@@ -44,6 +45,8 @@ Matrix::Init(Handle<Object> target) {
 	NODE_SET_PROTOTYPE_METHOD(constructor, "line", Line);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "save", Save);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "resize", Resize);
+	NODE_SET_PROTOTYPE_METHOD(constructor, "pyrDown", PyrDown);
+	NODE_SET_PROTOTYPE_METHOD(constructor, "pyrUp", PyrUp);
 	NODE_SET_PROTOTYPE_METHOD(constructor, "channels", Channels);
 
 	NODE_SET_PROTOTYPE_METHOD(constructor, "convertGrayscale", ConvertGrayscale);
@@ -211,6 +214,18 @@ Matrix::Size(const Arguments& args){
 }
 
 Handle<Value>
+Matrix::Clone(const Arguments& args){
+	SETUP_FUNCTION(Matrix)
+
+  Local<Object> im_h = Matrix::constructor->GetFunction()->NewInstance();
+  Matrix *m = ObjectWrap::Unwrap<Matrix>(im_h);
+  m->mat = self->mat.clone();
+
+  return scope.Close(im_h);
+}
+
+
+Handle<Value>
 Matrix::Row(const Arguments& args){
 	SETUP_FUNCTION(Matrix)
 
@@ -354,7 +369,7 @@ Matrix::ToBufferAsync(const v8::Arguments& args){
   baton->request.data = baton;
   baton->sleep_for = 1;
 
-  uv_queue_work(uv_default_loop(), &baton->request, AsyncToBufferAsync, AfterAsyncToBufferAsync);
+  uv_queue_work(uv_default_loop(), &baton->request, AsyncToBufferAsync, (uv_after_work_cb)AfterAsyncToBufferAsync);
 
   return Undefined();
 }
@@ -837,6 +852,21 @@ Matrix::Resize(const v8::Arguments& args){
   return scope.Close(Undefined());
 }
 
+Handle<Value>
+Matrix::PyrDown(const v8::Arguments& args){
+	SETUP_FUNCTION(Matrix)
+
+  cv::pyrDown(self->mat, self->mat);
+  return scope.Close(v8::Undefined());
+}
+
+Handle<Value>
+Matrix::PyrUp(const v8::Arguments& args){
+	SETUP_FUNCTION(Matrix)
+
+  cv::pyrUp(self->mat, self->mat);
+  return scope.Close(v8::Undefined());
+}
 
 Handle<Value>
 Matrix::inRange(const v8::Arguments& args) {
